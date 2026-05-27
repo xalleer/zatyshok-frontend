@@ -142,20 +142,24 @@ export async function getPropertiesNearby(
     Array<{ id: string; distance_km: number }>
   >`
     SELECT id,
-      (6371 * acos(
-        cos(radians(${lat})) * cos(radians(latitude)) *
-        cos(radians(longitude) - radians(${lng})) +
-        sin(radians(${lat})) * sin(radians(latitude))
-      )) AS distance_km
+           (6371 * acos(
+             cos(radians(${lat})) * cos(radians(latitude)) *
+             cos(radians(longitude) - radians(${lng})) +
+             sin(radians(${lat})) * sin(radians(latitude))
+                   )) AS distance_km
     FROM properties
     WHERE
       is_active = true AND
       is_hidden = false AND
       latitude IS NOT NULL AND
-      longitude IS NOT NULL
-    HAVING distance_km < ${radiusKm}
+      longitude IS NOT NULL AND
+      (6371 * acos(
+        cos(radians(${lat})) * cos(radians(latitude)) *
+        cos(radians(longitude) - radians(${lng})) +
+        sin(radians(${lat})) * sin(radians(latitude))
+              )) < ${radiusKm}
     ORDER BY distance_km
-    LIMIT 20
+      LIMIT 20
   `
 
   if (properties.length === 0) return []
