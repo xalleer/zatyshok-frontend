@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getProperties, getPropertiesNearby } from "@/lib/api/properties"
 import { apiSuccess, apiError } from "@/lib/types/api"
 import type { PropertyFilters } from "@/lib/types/property"
-import { UnitType } from "@/lib/generated/prisma"
+import { UnitType } from "@/lib/generated/prisma/enums"
 
 export async function GET(request: NextRequest) {
   try {

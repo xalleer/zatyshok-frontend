@@ -6,7 +6,7 @@ import { NearbyButton } from "@/components/marketplace/NearbyButton"
 import { PropertyCard } from "@/components/marketplace/PropertyCard"
 import { PropertyCardSkeleton } from "@/components/marketplace/PropertyCardSkeleton"
 import { useProperties, useNearbyProperties } from "@/hooks/useProperties"
-import { UnitType } from "@/lib/generated/prisma"
+import { UnitType } from "@/lib/generated/prisma/enums"
 import { SearchX } from "lucide-react"
 
 export function MarketplaceGrid() {

@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { UnitType } from "@/lib/generated/prisma"
+import { UnitType } from "@/lib/generated/prisma/enums"
 
 type Category = {
   type: UnitType | null

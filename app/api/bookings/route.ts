@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createBooking } from "@/lib/api/bookings"
 import { apiSuccess, apiError } from "@/lib/types/api"
-import { PaymentMethod } from "@/lib/generated/prisma"
+import { PaymentMethod } from "@/lib/generated/prisma/enums"
 import type { CreateBookingPayload } from "@/lib/types/booking"
 
 // Проста валідація без зовнішніх бібліотек (zod можна додати пізніше)

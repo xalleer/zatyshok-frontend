@@ -6,7 +6,7 @@ import { format } from "date-fns"
 import { toast } from "sonner"
 import type { BookingState, BookingStep, CreateBookingPayload, CreateBookingResponse } from "@/lib/types/booking"
 import type { ApiResponse } from "@/lib/types/api"
-import { PaymentMethod } from "@/lib/generated/prisma"
+import { PaymentMethod } from "@/lib/generated/prisma/enums"
 
 const INITIAL_STATE: BookingState = {
   step: "dates",
