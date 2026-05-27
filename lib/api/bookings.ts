@@ -2,7 +2,7 @@
 // Server-side функції для створення та управління бронюваннями
 
 import { prisma } from "@/lib/prisma"
-import { BookingStatus, PaymentMethod } from "@/lib/generated/prisma"
+import { BookingStatus, PaymentMethod } from "@/lib/generated/prisma/enums"
 import { checkDatesAvailable } from "@/lib/api/availability"
 import { parseISO, differenceInCalendarDays } from "date-fns"
 import type { CreateBookingPayload, CreateBookingResponse } from "@/lib/types/booking"

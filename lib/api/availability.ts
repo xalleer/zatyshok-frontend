@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { BookingStatus } from "@/lib/generated/prisma"
+import { BookingStatus } from "@/lib/generated/prisma/enums"
 import { format, eachDayOfInterval, parseISO } from "date-fns"
 
 // ─── Availability ─────────────────────────────────────────────────────────────
