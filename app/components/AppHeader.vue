@@ -1,4 +1,7 @@
 <script setup lang="ts">
+const props = defineProps<{
+  isAdmin: boolean
+}>()
 
 </script>
 
@@ -8,7 +11,7 @@
       <h1>Затишок</h1>
     </div>
 
-    <div class="actions">
+    <div class="actions" v-if="!isAdmin">
       <Button variant="outline">
         <NuxtLink :to="{name: 'auth-business-register'}">
           Для власників

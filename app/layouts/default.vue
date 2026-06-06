@@ -4,7 +4,7 @@
 
 <template>
   <div>
-    <AppHeader/>
+    <AppHeader :isAdmin="false"/>
     <main class="min-h-screen">
       <slot/>
     </main>

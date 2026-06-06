@@ -1,12 +1,12 @@
-import type {CreatePropertyRequest} from "~/types";
+import type {CreatePropertyRequest, PaginationResponse, Property} from "~/types";
 import { toast } from 'vue-sonner'
 
 export const usePropertyStore = defineStore('property', () => {
   const loading = ref(false)
+  const {$api} = useNuxtApp();
 
   const createProperty = async (body: CreatePropertyRequest) => {
     loading.value = true
-    const {$api} = useNuxtApp();
     try {
       await $api('/properties', {
         method: 'POST',
@@ -23,8 +23,20 @@ export const usePropertyStore = defineStore('property', () => {
     }
   }
 
+  const getAllPublicProperties = async () => {
+    loading.value = true
+    try {
+      return $api<PaginationResponse<Property>>(`/properties`)
+    } catch (e) {
+      toast.error('Помилка отримання даних')
+      console.error(e)
+      throw e
+    }
+  }
+
   return {
     loading,
-    createProperty
+    createProperty,
+    getAllPublicProperties
   }
 })
