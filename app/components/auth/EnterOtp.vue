@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {z} from 'zod'
-import {toTypedSchema} from '@vee-validate/zod'
+import { z } from 'zod'
+import { toTypedSchema } from '@vee-validate/zod'
 
 const authStore = useAuthStore()
 
@@ -9,15 +9,13 @@ const isResendDisabled = computed(() => resendTimeout.value > 0)
 
 const emit = defineEmits<{ verifyCode: [code: string], sendCode: [phone: string] }>()
 
-const resetButtonText = computed(() => {
-  if (isResendDisabled.value) {
-    return `${resendTimeout.value} секунд`}
-  return 'Надіслати ще раз'
-})
+const resendButtonText = computed(() =>
+  isResendDisabled.value ? `Надіслати ще раз через ${resendTimeout.value} с` : 'Надіслати ще раз'
+)
 
 const otpSchema = toTypedSchema(z.object({
   otp: z
-    .string({message: 'Введіть код підтвердження'})
+    .string({ message: 'Введіть код підтвердження' })
     .length(4, 'Код повинен складатися з 4 цифр'),
 }))
 
@@ -31,60 +29,79 @@ const onSubmit = form.handleSubmit((values) => {
 
 const sendCode = () => {
   emit('sendCode', authStore.phoneState)
+  resendTimeout.value = 60
 }
 
+let timer: ReturnType<typeof setInterval>
+
 onMounted(() => {
-  setInterval(() => {
+  timer = setInterval(() => {
     if (resendTimeout.value > 0) {
       resendTimeout.value--
     }
   }, 1000)
 })
+
+onUnmounted(() => {
+  clearInterval(timer)
+})
 </script>
 
 <template>
-  <form @submit="onSubmit" class="flex flex-col gap-2">
-    <FormField v-slot="{ componentField }" name="otp">
-      <FormItem>
-        <FormLabel>Код надіслано на {{ authStore.phoneState }}</FormLabel>
-        <FormControl>
-          <InputOTP :maxlength="4" v-bind="componentField">
-            <InputOTPGroup>
-              <InputOTPSlot :index="0"></InputOTPSlot>
-            </InputOTPGroup>
-            <InputOTPSeparator />
-            <InputOTPGroup>
-              <InputOTPSlot :index="1"></InputOTPSlot>
-            </InputOTPGroup>
-            <InputOTPSeparator />
+  <div class="w-full max-w-sm space-y-6">
+    <!-- Заголовок -->
+    <div class="space-y-1">
+      <h2 class="text-2xl font-semibold tracking-tight">Підтвердження</h2>
+      <p class="text-sm text-muted-foreground">
+        Ми надіслали 4-значний код на
+        <span class="font-medium text-foreground">{{ authStore.phoneState }}</span>
+      </p>
+    </div>
 
-            <InputOTPGroup>
-              <InputOTPSlot :index="2"></InputOTPSlot>
-            </InputOTPGroup>
-            <InputOTPSeparator />
+    <form class="space-y-4" @submit="onSubmit">
+      <FormField v-slot="{ componentField }" name="otp">
+        <FormItem>
+          <FormLabel>Код підтвердження</FormLabel>
+          <FormControl>
+            <!-- Центруємо OTP-поле -->
+            <div class="flex justify-start">
+              <InputOTP :maxlength="4" v-bind="componentField">
+                <InputOTPGroup>
+                  <InputOTPSlot :index="0" />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot :index="1" />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot :index="2" />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot :index="3" />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </FormField>
 
-            <InputOTPGroup>
-              <InputOTPSlot :index="3"></InputOTPSlot>
-            </InputOTPGroup>
-          </InputOTP>
-        </FormControl>
-        <FormMessage/>
-      </FormItem>
-    </FormField>
+      <Button :disabled="authStore.loading" class="w-full" type="submit">
+        <Spinner v-if="authStore.loading" />
+        Увійти
+      </Button>
 
-    <Button :disabled="authStore.loading" class="mt-4" type="submit">
-      <Spinner v-if="authStore.loading"></Spinner>
-      Увійти
-    </Button>
-
-    <Button @click="sendCode" :disabled="isResendDisabled" variant="ghost">
-      {{ resetButtonText }}
-    </Button>
-
-
-  </form>
+      <Button
+        type="button"
+        variant="ghost"
+        class="w-full text-muted-foreground"
+        :disabled="isResendDisabled"
+        @click="sendCode"
+      >
+        {{ resendButtonText }}
+      </Button>
+    </form>
+  </div>
 </template>
-
-<style scoped>
-
-</style>
