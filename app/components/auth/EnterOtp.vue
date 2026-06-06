@@ -36,15 +36,11 @@ let timer: ReturnType<typeof setInterval>
 
 onMounted(() => {
   timer = setInterval(() => {
-    if (resendTimeout.value > 0) {
-      resendTimeout.value--
-    }
+    if (resendTimeout.value > 0) resendTimeout.value--
   }, 1000)
 })
 
-onUnmounted(() => {
-  clearInterval(timer)
-})
+onUnmounted(() => clearInterval(timer))
 </script>
 
 <template>
@@ -58,35 +54,46 @@ onUnmounted(() => {
     </div>
 
     <form class="space-y-4" @submit="onSubmit">
-      <FormField v-slot="{ componentField }" name="otp">
+      <FormField v-slot="{ field }" name="otp">
         <FormItem>
           <FormLabel>Код підтвердження</FormLabel>
           <FormControl>
-            <div class="flex justify-start">
-              <InputOTP :maxlength="4" v-bind="componentField">
-                <InputOTPGroup>
-                  <InputOTPSlot :index="0" class="h-16 w-16 text-2xl" />
-                </InputOTPGroup>
+            <!--
+              Використовуємо field.value / field.onChange замість componentField.
+              componentField прив'язує onBlur → валідація спрацьовує при фокусі/кліку.
+              З field.onChange валідація відбувається тільки при submit (через handleSubmit).
 
-                <InputOTPSeparator />
+              w-full на InputOTP + justify-between вирівнює слоти по ширині кнопки.
+              Кожен слот flex-1 щоб рівномірно заповнити простір.
+            -->
+            <InputOTP
+              :maxlength="4"
+              :model-value="field.value"
+              class="w-full"
+              @update:model-value="field.onChange"
+            >
+              <InputOTPGroup class="flex-1 justify-center">
+                <InputOTPSlot :index="0" class="h-16 w-full text-2xl" />
+              </InputOTPGroup>
 
-                <InputOTPGroup>
-                  <InputOTPSlot :index="1" class="h-16 w-16 text-2xl" />
-                </InputOTPGroup>
+              <InputOTPSeparator />
 
-                <InputOTPSeparator />
+              <InputOTPGroup class="flex-1 justify-center">
+                <InputOTPSlot :index="1" class="h-16 w-full text-2xl" />
+              </InputOTPGroup>
 
-                <InputOTPGroup>
-                  <InputOTPSlot :index="2" class="h-16 w-16 text-2xl" />
-                </InputOTPGroup>
+              <InputOTPSeparator />
 
-                <InputOTPSeparator />
+              <InputOTPGroup class="flex-1 justify-center">
+                <InputOTPSlot :index="2" class="h-16 w-full text-2xl" />
+              </InputOTPGroup>
 
-                <InputOTPGroup>
-                  <InputOTPSlot :index="3" class="h-16 w-16 text-2xl" />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
+              <InputOTPSeparator />
+
+              <InputOTPGroup class="flex-1 justify-center">
+                <InputOTPSlot :index="3" class="h-16 w-full text-2xl" />
+              </InputOTPGroup>
+            </InputOTP>
           </FormControl>
           <FormMessage />
         </FormItem>
