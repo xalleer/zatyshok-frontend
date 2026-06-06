@@ -23,6 +23,6 @@ onUnmounted(() => {
 <template>
   <AuthEnterPhone v-if="!authStore.isCodeSent && !authStore.isAuthCompleted" @send-code="onSendCode"/>
   <AuthEnterOtp v-else-if="authStore.isCodeSent && !authStore.isAuthCompleted" @verify-code="onVerifyCode" @send-code="onSendCode"/>
-  <AuthCreateProperty v-else-if="authStore.isAuthCompleted" @change-phone-number="authStore.clearState()"/>
+  <AuthCreateProperty v-else-if="authStore.isAuthCompleted" @change-phone-number="changePhoneNumber"/>
 
 </template>

@@ -49,7 +49,6 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full max-w-sm space-y-6">
-    <!-- Заголовок -->
     <div class="space-y-1">
       <h2 class="text-2xl font-semibold tracking-tight">Підтвердження</h2>
       <p class="text-sm text-muted-foreground">
@@ -63,23 +62,28 @@ onUnmounted(() => {
         <FormItem>
           <FormLabel>Код підтвердження</FormLabel>
           <FormControl>
-            <!-- Центруємо OTP-поле -->
             <div class="flex justify-start">
               <InputOTP :maxlength="4" v-bind="componentField">
                 <InputOTPGroup>
-                  <InputOTPSlot :index="0" />
+                  <InputOTPSlot :index="0" class="h-16 w-16 text-2xl" />
                 </InputOTPGroup>
+
                 <InputOTPSeparator />
+
                 <InputOTPGroup>
-                  <InputOTPSlot :index="1" />
+                  <InputOTPSlot :index="1" class="h-16 w-16 text-2xl" />
                 </InputOTPGroup>
+
                 <InputOTPSeparator />
+
                 <InputOTPGroup>
-                  <InputOTPSlot :index="2" />
+                  <InputOTPSlot :index="2" class="h-16 w-16 text-2xl" />
                 </InputOTPGroup>
+
                 <InputOTPSeparator />
+
                 <InputOTPGroup>
-                  <InputOTPSlot :index="3" />
+                  <InputOTPSlot :index="3" class="h-16 w-16 text-2xl" />
                 </InputOTPGroup>
               </InputOTP>
             </div>
