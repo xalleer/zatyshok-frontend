@@ -1,8 +1,14 @@
 <template>
   <NuxtLayout>
+    <Toaster position="top-right" :expand="false" richColors/>
     <NuxtPage />
   </NuxtLayout>
 </template>
+
+<script lang="ts" setup>
+import { Toaster } from 'vue-sonner'
+import 'vue-sonner/style.css'
+</script>
 
 <style>
 .rotate-enter-active,

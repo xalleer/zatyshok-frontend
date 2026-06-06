@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import { toTypedSchema } from '@vee-validate/zod'
+import type {CreatePropertyRequest} from "~/types";
 
-const emit = defineEmits<{ changePhoneNumber: [] }>()
+const propertyStore = usePropertyStore()
+
+const emit = defineEmits<{ changePhoneNumber: [], createProperty: [property: CreatePropertyRequest] }>()
 
 const propertySchema = toTypedSchema(z.object({
   name: z
@@ -16,8 +19,10 @@ const form = useForm({
 })
 
 const onSubmit = form.handleSubmit((values) => {
-  // TODO: відправити на сервер
-  console.log('Create property:', values)
+  emit('createProperty', {
+    name: values.name,
+    slug: values.name.toLowerCase().replace(/\s+/g, '-'),
+  })
 })
 </script>
 
@@ -47,7 +52,10 @@ const onSubmit = form.handleSubmit((values) => {
         </FormItem>
       </FormField>
 
-      <Button class="w-full" type="submit">Створити</Button>
+      <Button :disabled="propertyStore.loading" class="w-full" type="submit">
+        <Spinner v-if="propertyStore.loading"></Spinner>
+        Створити
+      </Button>
 
       <Button
         type="button"

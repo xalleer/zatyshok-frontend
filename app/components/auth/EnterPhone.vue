@@ -8,7 +8,6 @@ const emit = defineEmits<{ sendCode: [phone: string] }>()
 const phoneSchema = toTypedSchema(z.object({
   phone: z
     .string({ message: 'Введіть номер телефону' })
-    .length(9, 'Кількість цифр повинна бути не менше 9')
     .regex(/^\+\d{8,15}$/, 'Невірний формат номеру телефону'),
   agreement: z
     .boolean()

@@ -1,9 +1,16 @@
+import { toast } from 'vue-sonner'
+import type {User, Property, VerifyOtpResponse} from "~/types";
+
 export const useAuthStore = defineStore('auth', () => {
 
   const loading = ref(false)
   const phoneState = ref('')
   const isCodeSent = ref(false)
   const isAuthCompleted = ref(false)
+  const user = ref<User | null>(null)
+  const property = ref<Property | null>(null)
+
+
 
   const sendOtpCode = async (phone: string) => {
     const {$api} = useNuxtApp();
@@ -28,12 +35,18 @@ export const useAuthStore = defineStore('auth', () => {
     const {$api} = useNuxtApp();
     loading.value = true
     try {
-      await $api('/auth/verify-otp', {
+      const res: VerifyOtpResponse = await $api('/auth/verify-otp', {
         method: 'POST',
         body: {phone, code, role},
       });
+      user.value = res.user
+      if (res.property) {
+        property.value = res.property
+      }
       isAuthCompleted.value = true
+      return property.value
     } catch (e) {
+      toast.error('Невірний код')
       console.error('Помилка авторизації:', e);
       throw e;
     } finally {
@@ -52,6 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
     phoneState,
     isCodeSent,
     isAuthCompleted,
+    property,
     sendOtpCode,
     verifyOtpCode,
     clearState
