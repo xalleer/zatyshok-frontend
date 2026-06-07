@@ -15,6 +15,7 @@ export default defineNuxtConfig({
       },
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', integrity: 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=', crossorigin: '' },
       ],
     },
     pageTransition: {
@@ -28,7 +29,7 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/auth/*': {appLayout: 'auth'},
-    '/admin/*': {appLayout: 'admin'},
+    '/admin/**': {appLayout: 'admin'},
   },
   modules: ['shadcn-nuxt', '@nuxtjs/tailwindcss', [
     '@vee-validate/nuxt',

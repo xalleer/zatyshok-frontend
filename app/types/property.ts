@@ -12,8 +12,8 @@ export interface Property {
   images: string []
   city: string
   address: string
-  latitude: string
-  longitude: string
+  latitude: number
+  longitude: number
   policy: PropertyPolicy
   isActive: boolean
   hostId: string
@@ -31,9 +31,12 @@ export interface CreatePropertyRequest {
   description?: string
   city?: string
   address?: string
-  latitude?: string
-  longitude?: string
+  latitude?: number
+  longitude?: number
   policy?: PropertyPolicy
 }
 
 export interface CreatePropertyResponse extends Property {}
+export interface UpdatePropertyResponse extends Property {}
+export interface UpdatePropertyRequest extends Partial<CreatePropertyRequest> {}
+
