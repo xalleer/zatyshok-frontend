@@ -25,7 +25,7 @@ import {
 import type {Property} from "~/types";
 
 interface Props extends SidebarProps{
-  properties: Property []
+  properties?: Property []
 }
 
 const props = defineProps<Props>()

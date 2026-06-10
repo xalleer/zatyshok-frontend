@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import {Bell} from '@lucide/vue';
+import {getRouteTitle} from '~/utils/getRouteTitle'
+import {Routes} from '~/types/routes'
 
 const propertyStore = usePropertyStore()
+const route = useRoute()
+
 
 const {data: adminProperties, pending} = useAsyncData(() => propertyStore.getMyAdminProperties())
+
+const isAllContentPadding = computed(() => {
+  return route.name !== Routes.ADMIN_BOOKINGS;
+})
 
 onMounted(() => {
   if (!pending.value && adminProperties.value) {
@@ -16,11 +24,11 @@ onMounted(() => {
   <div class="flex flex-col min-h-screen">
 
     <SidebarProvider class="flex flex-1 overflow-hidden">
-      <AppSidebar :properties="adminProperties!.data" />
+      <AppSidebar :properties="adminProperties?.data" />
       <SidebarInset class="flex flex-col flex-1 min-w-0">
         <header class="flex justify-between items-center px-6 py-4 border-b-1 border-zinc-200">
           <div class="flex flex-col">
-            <h3 class="text-lg font-semibold">Dashboard</h3>
+            <h3 class="text-lg font-semibold">{{ getRouteTitle(route.name as Routes) }}</h3>
             <span class="text-sm text-muted-foreground">Wednesday, 10 June 2026 · Summer Season</span>
           </div>
 
@@ -65,7 +73,7 @@ onMounted(() => {
 
           </div>
         </header>
-        <main class="flex-1 overflow-auto p-6">
+        <main class="flex-1 overflow-auto" :class="{'p-6' : isAllContentPadding}">
           <slot/>
         </main>
       </SidebarInset>

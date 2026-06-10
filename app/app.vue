@@ -2,6 +2,7 @@
   <NuxtLayout>
     <Toaster position="top-right" :expand="false" richColors/>
     <NuxtPage />
+    <CookieBanner />
   </NuxtLayout>
 </template>
 
@@ -11,13 +12,19 @@ import 'vue-sonner/style.css'
 </script>
 
 <style>
-.rotate-enter-active,
-.rotate-leave-active {
-  transition: all 0.4s;
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
-.rotate-enter-from,
-.rotate-leave-to {
+
+.page-enter-from {
   opacity: 0;
-  transform: rotate3d(1, 1, 1, 15deg);
+  transform: scale(0.985);
+}
+
+.page-leave-to {
+  opacity: 0;
 }
 </style>

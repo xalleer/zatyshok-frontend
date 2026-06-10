@@ -20,11 +20,11 @@ export default defineNuxtConfig({
       ],
     },
     pageTransition: {
-      name: 'rotate',
-      mode: 'out-in',
+      name: 'page',
+      mode: 'out-in'
     },
     layoutTransition: {
-      name: 'rotate',
+      name: 'page',
       mode: 'out-in',
     },
   },
