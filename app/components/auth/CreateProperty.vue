@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { z } from 'zod'
-import { toTypedSchema } from '@vee-validate/zod'
+import {z} from 'zod'
+import {toTypedSchema} from '@vee-validate/zod'
 import type {CreatePropertyRequest} from "~/types";
 
 const propertyStore = usePropertyStore()
@@ -9,7 +9,7 @@ const emit = defineEmits<{ changePhoneNumber: [], createProperty: [property: Cre
 
 const propertySchema = toTypedSchema(z.object({
   name: z
-    .string({ message: 'Введіть назву' })
+    .string({message: 'Введіть назву'})
     .min(3, 'Назва повинна містити щонайменше 3 символи')
     .max(100, 'Назва занадто довга'),
 }))
@@ -21,7 +21,7 @@ const form = useForm({
 const onSubmit = form.handleSubmit((values) => {
   emit('createProperty', {
     name: values.name,
-    slug: values.name.toLowerCase().replace(/\s+/g, '-'),
+    slug: generateSlug(values.name),
   })
 })
 </script>
@@ -48,7 +48,7 @@ const onSubmit = form.handleSubmit((values) => {
           <FormDescription>
             Ця назва видима тільки вам
           </FormDescription>
-          <FormMessage />
+          <FormMessage/>
         </FormItem>
       </FormField>
 

@@ -2,23 +2,11 @@
 import { ChevronLeft } from '@lucide/vue'
 
 const router = useRouter()
-const { customBack } = useAuthLayout()
 
 const goBack = () => {
-  if (customBack.value) {
-    customBack.value()
-    return
-  }
-  if (window.history.length > 1) {
     router.back()
-  } else {
-    router.push({ name: 'index' })
-  }
 }
 
-onUnmounted(() => {
-  customBack.value = null
-})
 </script>
 
 <template>

@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import type { SidebarProps } from "@/components/ui/sidebar"
-import { CreditCard, LogOut, UserRound, House, ScrollText } from '@lucide/vue';
-import { GalleryVerticalEnd } from "@lucide/vue"
+import type {SidebarProps} from "@/components/ui/sidebar"
+import {
+  House,
+  GalleryVerticalEnd,
+  ChevronRight,
+  LayoutDashboard,
+  CalendarDays,
+  Building2,
+  Users,
+  ChartColumn,
+  Settings,
+  TreePine,
+  Tent,
+} from '@lucide/vue';
 import {
   Sidebar,
   SidebarContent,
@@ -10,40 +21,85 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
 } from "@/components/ui/sidebar"
+import type {Property} from "~/types";
 
-const props = defineProps<SidebarProps>()
+interface Props extends SidebarProps{
+  properties: Property []
+}
 
+const props = defineProps<Props>()
+
+const isActiveRoute = (urlName: string) => {
+  const route = useRoute()
+  return route.name === urlName
+}
+
+const mappedProperties = computed(() => {
+  if (!props.properties) {
+    return []
+  }
+  props.properties.map(item => {
+    return {
+      title: item.name,
+      url: `/admin/properties/${item.id}`
+    }
+  })
+})
 
 const data = {
   navMain: [
     {
-      title: "Об'єкти",
-      urlName: "admin-properties",
-      icon: House
+      title: "Головна",
+      urlName: "admin",
+      icon: LayoutDashboard
     },
     {
       title: "Записи",
+      urlName: "admin-bookings",
+      icon: CalendarDays
+    },
+    {
+      title: "Об'єкти",
       urlName: "admin-properties",
-      icon: ScrollText
+      icon: Building2
+    },
+    {
+      title: "Гості",
+      urlName: "admin-guests",
+      icon: Users
+    },
+    {
+      title: "Репорти",
+      urlName: "admin-reports",
+      icon: ChartColumn
+    },
+    {
+      title: "Налаштування",
+      urlName: "admin-settings",
+      icon: Settings
     },
   ],
-  navFooter: [
+  navManagement: [
     {
-      title: "Профіль",
-      urlName: "admin-profile",
-      icon: UserRound
-    },
-    {
-      title: "Підписка",
-      urlName: "admin-properties",
-      icon: CreditCard
-    },
-    {
-      title: "Вихід",
-      url: "admin-properties",
-      icon: LogOut
+      title: "Playground",
+      url: "#",
+      icon: Tent,
+      isActive: true,
+      items: [
+        {
+          title: "History",
+          url: "#",
+        },
+        {
+          title: "Starred",
+          url: "#",
+        },
+        {
+          title: "Settings",
+          url: "#",
+        },
+      ],
     },
   ]
 }
@@ -51,13 +107,14 @@ const data = {
 
 <template>
   <Sidebar v-bind="props">
-    <SidebarHeader>
+    <SidebarHeader class="border-b-1 border-zinc-200">
       <SidebarMenu>
-        <SidebarMenuItem>
+        <SidebarMenuItem class="py-2">
           <SidebarMenuButton size="lg" as-child>
             <a href="#">
-              <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <GalleryVerticalEnd class="size-4" />
+              <div
+                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <GalleryVerticalEnd class="size-4"/>
               </div>
               <div class="flex flex-col gap-0.5 leading-none">
                 <span class="font-medium">Documentation</span>
@@ -70,40 +127,56 @@ const data = {
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup>
-        <SidebarGroupLabel>
-          Керування
-        </SidebarGroupLabel>
         <SidebarMenu>
           <SidebarMenuItem v-for="item in data.navMain" :key="item.title">
-            <SidebarMenuButton as-child>
+            <SidebarMenuButton as-child :is-active="isActiveRoute(item.urlName)">
               <NuxtLink :to="{name: item.urlName}" class="flex items-center gap-2">
-                <component :is="item.icon" v-if="item.icon" class="size-4 shrink-0" />
-                <span>{{ item.title }}</span>
+                <component :is="item.icon" v-if="item.icon" class="size-4 shrink-0"/>
+                <Label>{{ item.title }}</Label>
               </NuxtLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
-    </SidebarContent>
-    <SidebarRail />
-
-    <SidebarFooter>
       <SidebarGroup>
-        <SidebarGroupLabel>
-          Налаштування
-        </SidebarGroupLabel>
+        <SidebarGroupLabel>Properties & Units</SidebarGroupLabel>
         <SidebarMenu>
-          <SidebarMenuItem v-for="item in data.navFooter" :key="item.title">
-            <SidebarMenuButton as-child>
-              <NuxtLink :to="{name: item.urlName}" class="flex items-center gap-2">
-                <component :is="item.icon" v-if="item.icon" class="size-4 shrink-0" />
-                <span>{{ item.title }}</span>
-              </NuxtLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+          <Collapsible
+            v-for="item in data.navManagement"
+            :key="item.title"
+            as-child
+            :default-open="item.isActive"
+            class="group/collapsible"
+          >
+            <SidebarMenuItem>
+              <CollapsibleTrigger as-child>
+                <SidebarMenuButton :tooltip="item.title">
+                  <component :is="item.icon" v-if="item.icon"/>
+                  <Label>{{ item.title }}</Label>
+                  <div class="ml-auto flex gap-2 items-center">
+                    <span class="text-xs text-muted-foreground">2/3</span>
+                    <ChevronRight
+                      class="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                  </div>
 
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
+                    <SidebarMenuSubButton as-child>
+                      <NuxtLink :to="subItem.url">
+                        <Label>{{ subItem.title }}</Label>
+                      </NuxtLink>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+        </SidebarMenu>
       </SidebarGroup>
-    </SidebarFooter>
+
+    </SidebarContent>
   </Sidebar>
 </template>

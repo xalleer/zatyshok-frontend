@@ -3,7 +3,6 @@ import type {CreatePropertyRequest} from "~/types";
 
 const authStore = useAuthStore()
 const propertyStore = usePropertyStore()
-const { customBack } = useAuthLayout()
 
 const onSendCode = async (phone: string) => {
   await authStore.sendOtpCode(phone)
@@ -26,23 +25,10 @@ const onCreateProperty = async (property: CreatePropertyRequest) => {
   await navigateTo({name: 'admin'})
 }
 
-watch(
-  () => authStore.isCodeSent,
-  (isCodeSent) => {
-    if (isCodeSent) {
-      customBack.value = () => {
-        authStore.clearState()
-      }
-    } else {
-      customBack.value = null
-    }
-  },
-  { immediate: true },
-)
+
 
 onUnmounted(() => {
   authStore.clearState()
-  customBack.value = null
 })
 </script>
 

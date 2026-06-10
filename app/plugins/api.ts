@@ -24,7 +24,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         // Очищаємо дані користувача (якщо у вас є store для цього)
         // const authStore = useAuthStore();
         // authStore.clearUser();
-        await nuxtApp.runWithContext(() => navigateTo('/login'));
+        await nuxtApp.runWithContext(() => navigateTo('/auth/business-register'));
       }
     }
   });

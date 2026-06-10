@@ -1,4 +1,3 @@
-<!-- components/admin/AdminPropertyCard.vue -->
 <script setup lang="ts">
 import { Eye, EyeOff, Pencil, Trash2, Building2 } from '@lucide/vue'
 import type { Property } from '~/types'
@@ -66,7 +65,6 @@ const emit = defineEmits<{
       </div>
     </CardContent>
 
-    <!-- Дії -->
     <CardFooter class="px-4 pb-4 pt-3 border-t flex items-center gap-2">
       <!-- Button group -->
       <div class="flex rounded-md border overflow-hidden">
