@@ -10,7 +10,14 @@ const route = useRoute()
 const {data: adminProperties, pending} = useAsyncData(() => propertyStore.getMyAdminProperties())
 
 const isAllContentPadding = computed(() => {
-  return route.name !== Routes.ADMIN_BOOKINGS;
+  switch (route.name) {
+    case (Routes.ADMIN_BOOKINGS):
+      return false
+    case (Routes.ADMIN_PROPERTY):
+      return false
+    default:
+      return true
+  }
 })
 
 onMounted(() => {

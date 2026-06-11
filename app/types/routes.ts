@@ -1,5 +1,6 @@
 export enum Routes {
   ADMIN_BOOKINGS = 'admin-bookings',
+  ADMIN_PROPERTY = 'admin-properties-id',
   ADMIN_PROPERTIES = 'admin-properties',
   ADMIN_GUESTS = 'admin-guests',
   ADMIN_REPORTS = 'admin-reports',

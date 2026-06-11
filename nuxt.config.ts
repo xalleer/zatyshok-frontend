@@ -43,7 +43,7 @@ export default defineNuxtConfig({
         ErrorMessage: 'VeeErrorMessage',
       },
     },
-  ], '@pinia/nuxt', '@nuxt/icon'],
+  ], '@pinia/nuxt', '@nuxt/icon', 'nuxt-swiper', 'nuxt-lucide-icons'],
   shadcn: {
     prefix: '',
     componentDir: '@/components/ui'
