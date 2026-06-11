@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import Wifi from 'nuxt-lucide-icons'
+const route = useRoute()
+const { data: property, pending } = await useAdminProperty(route.params.id as string)
 const tabClass = "bg-transparent rounded-none border-0 border-b-2 border-transparent px-0 pb-3 pt-0 font-medium text-muted-foreground shadow-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:border-b-emerald-900 data-[state=active]:text-emerald-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
 const slides = [
   {

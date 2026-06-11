@@ -1,108 +1,70 @@
 <script setup lang="ts">
-import { Eye, EyeOff, Pencil, Trash2, Building2 } from '@lucide/vue'
-import type { Property } from '~/types'
-
-const props = defineProps<{ property: Property }>()
 
 const emit = defineEmits<{
-  edit: [id: string]
-  delete: [id: string]
-  toggleActive: [id: string]
-  viewUnits: [id: string]
+  (e: 'openPropertyDetails'): void
 }>()
+
 </script>
 
 <template>
-  <Card class="overflow-hidden p-0 gap-0">
+  <div class="p-4 mt-4 border border-zinc-200 rounded-xl flex flex-col gap-2">
+    <div class="flex justify-between items-center border-b border-zinc-200 pb-2">
+      <div class="flex gap-2 items-center">
+        <div class="p-2 rounded-xl bg-green-200">
+          <Shrub />
+        </div>
 
-    <!-- Фото -->
-    <div class="relative h-44 overflow-hidden bg-muted">
-      <img
-        v-if="property.coverImage"
-        :src="property.coverImage"
-        :alt="property.name"
-        class="w-full h-full object-cover"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-
-      <Badge
-        class="absolute top-3 right-3"
-        :class="property.isActive
-          ? 'bg-green-500/15 text-green-700 border-green-500/30'
-          : 'bg-muted text-muted-foreground'"
-        variant="outline"
-      >
-        {{ property.isActive ? '● Активний' : '○ Неактивний' }}
-      </Badge>
-
-      <div class="absolute bottom-3 left-3 flex gap-3">
-        <span class="flex items-center gap-1 text-white text-xs font-medium">
-          <Star class="size-3 fill-yellow-400 text-yellow-400" />
-          {{ property.rating?.description ?? '—' }}
-        </span>
-        <span class="flex items-center gap-1 text-white text-xs">
-          <MessageCircle class="size-3" />
-          {{ property.reviewCount }} відгуків
-        </span>
-      </div>
-    </div>
-
-    <!-- Інфо -->
-    <CardHeader class="px-4 pt-4 pb-2">
-      <CardTitle class="text-base">{{ property.name }}</CardTitle>
-      <CardDescription class="flex items-center gap-1 text-xs">
-        <MapPin class="size-3" />
-        {{ property.city }}, {{ property.address }}
-      </CardDescription>
-    </CardHeader>
-
-    <CardContent class="px-4 pb-3">
-      <div class="grid grid-cols-4 gap-2 text-center">
-        <div v-for="stat in stats" :key="stat.label">
-          <p class="text-[10px] uppercase tracking-wide text-muted-foreground">{{ stat.label }}</p>
-          <p class="text-sm font-medium">{{ stat.value }}</p>
+        <div>
+          <h3>Ridgeline Retreat</h3>
+          <Badge>Forest Retreat</Badge>
         </div>
       </div>
-    </CardContent>
 
-    <CardFooter class="px-4 pb-4 pt-3 border-t flex items-center gap-2">
-      <!-- Button group -->
-      <div class="flex rounded-md border overflow-hidden">
-        <Button
-          size="sm" variant="ghost"
-          class="rounded-none border-r text-xs gap-1.5 h-8"
-          @click="emit('edit', property.id)"
-        >
-          <Pencil class="size-3.5" /> Редагувати
-        </Button>
-        <Button
-          size="sm" variant="ghost"
-          class="rounded-none border-r text-xs gap-1.5 h-8"
-          @click="emit('viewUnits', property.id)"
-        >
-          <Building2 class="size-3.5" /> Юніти
-        </Button>
-        <Button
-          size="sm" variant="ghost"
-          class="rounded-none text-xs h-8 px-3"
-          :class="property.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-primary'"
-          @click="emit('toggleActive', property.id)"
-        >
-          <EyeOff v-if="property.isActive" class="size-3.5" />
-          <Eye v-else class="size-3.5" />
+      <div class="flex gap-2 items-center">
+        <Button @click="emit('openPropertyDetails')" variant="outline">View Details</Button>
+        <Button size="icon">
+          <Ellipsis />
         </Button>
       </div>
 
-      <div class="flex-1" />
+    </div>
+    <div class="flex gap-4 items-center py-2 border-b border-zinc-200">
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-zinc-500">Units</span>
+        <Label>3</Label>
+      </div>
 
-      <Button
-        size="icon-sm" variant="ghost"
-        class="text-destructive hover:text-destructive hover:bg-destructive/10"
-        @click="emit('delete', property.id)"
-      >
-        <Trash2 class="size-4" />
-      </Button>
-    </CardFooter>
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-zinc-500">Occupied</span>
+        <Label>3</Label>
+      </div>
 
-  </Card>
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-zinc-500">Occupancy</span>
+        <Label>75%</Label>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-zinc-500">Revenue</span>
+        <Label>$14,200 /mo</Label>
+      </div>
+    </div>
+    <div class="flex gap-2 items-center py-2">
+      <Badge>
+        <span class="w-[5px] h-[5px] bg-green-500 rounded-full"></span>
+        <span>Treehouse Loft</span>
+      </Badge>
+
+      <Badge>
+        <span class="w-[5px] h-[5px] bg-green-500 rounded-full"></span>
+        <span>Treehouse Loft</span>
+      </Badge>
+
+      <Badge>
+        <span class="w-[5px] h-[5px] bg-green-500 rounded-full"></span>
+        <span>Treehouse Loft</span>
+      </Badge>
+    </div>
+  </div>
+
 </template>

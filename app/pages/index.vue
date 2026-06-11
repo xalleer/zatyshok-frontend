@@ -1,10 +1,6 @@
 <script setup lang="ts">
-const propertyStore = usePropertyStore()
 
-const {
-  data: properties,
-  pending,
-} = await useAsyncData('publicProperties', () => propertyStore.getAllPublicProperties())
+const { data: properties, pending } = await usePublicProperties()
 </script>
 
 <template>

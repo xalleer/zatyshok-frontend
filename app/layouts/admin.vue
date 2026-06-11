@@ -3,11 +3,8 @@ import {Bell} from '@lucide/vue';
 import {getRouteTitle} from '~/utils/getRouteTitle'
 import {Routes} from '~/types/routes'
 
-const propertyStore = usePropertyStore()
 const route = useRoute()
-
-
-const {data: adminProperties, pending} = useAsyncData(() => propertyStore.getMyAdminProperties())
+const { data: adminProperties, pending } = useAdminProperties()
 
 const isAllContentPadding = computed(() => {
   switch (route.name) {
@@ -20,11 +17,6 @@ const isAllContentPadding = computed(() => {
   }
 })
 
-onMounted(() => {
-  if (!pending.value && adminProperties.value) {
-    propertyStore.setAdminProperties(adminProperties.value)
-  }
-})
 </script>
 
 <template>
