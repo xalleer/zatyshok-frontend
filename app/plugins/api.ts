@@ -13,6 +13,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         if (headers.cookie) {
           options.headers = {
             ...options.headers,
+            //@ts-ignore
             cookie: headers.cookie
           };
         }

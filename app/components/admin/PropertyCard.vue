@@ -1,7 +1,13 @@
 <script setup lang="ts">
 
+import type {Property} from "~/types";
+
+const props = defineProps<{
+  property: Property
+}>()
+
 const emit = defineEmits<{
-  (e: 'openPropertyDetails'): void
+  (e: 'openPropertyDetails', id: string): void
 }>()
 
 </script>
@@ -11,19 +17,19 @@ const emit = defineEmits<{
     <div class="flex justify-between items-center border-b border-zinc-200 pb-2">
       <div class="flex gap-2 items-center">
         <div class="p-2 rounded-xl bg-green-200">
-          <Shrub />
+          <LucideShrub />
         </div>
 
         <div>
-          <h3>Ridgeline Retreat</h3>
+          <h3>{{ property.name }}</h3>
           <Badge>Forest Retreat</Badge>
         </div>
       </div>
 
       <div class="flex gap-2 items-center">
-        <Button @click="emit('openPropertyDetails')" variant="outline">View Details</Button>
+        <Button @click="emit('openPropertyDetails', property.id)" variant="outline">View Details</Button>
         <Button size="icon">
-          <Ellipsis />
+          <LucideEllipsis />
         </Button>
       </div>
 

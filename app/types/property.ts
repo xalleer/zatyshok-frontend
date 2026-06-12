@@ -8,8 +8,8 @@ export interface Property {
   name: string
   slug: string
   description: string
-  coverImage: string
-  images: string []
+  coverImage: string | null
+  images: string [] | null
   city: string
   address: string
   latitude: number

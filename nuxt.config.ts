@@ -3,7 +3,9 @@
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://jsonplaceholder.typicode.com'
+      apiBase: process.env.NODE_ENV === 'production'
+          ? '/api'  // через проксі в prod
+          : 'http://localhost:3001/api' // прямо в dev
     }
   },
   compatibilityDate: '2025-07-15',
@@ -31,6 +33,9 @@ export default defineNuxtConfig({
   routeRules: {
     '/auth/*': {appLayout: 'auth'},
     '/admin/**': {appLayout: 'admin'},
+    '/api/**': {
+      proxy: { to: 'https://zatyshok-backend.fly.dev/api/**' }
+    }
   },
   modules: ['shadcn-nuxt', '@nuxtjs/tailwindcss', [
     '@vee-validate/nuxt',

@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/sidebar"
 import type {Property} from "~/types";
 
-interface Props extends SidebarProps{
+interface Props extends SidebarProps {
   properties?: Property []
 }
 
@@ -39,10 +39,26 @@ const mappedProperties = computed(() => {
   if (!props.properties) {
     return []
   }
-  props.properties.map(item => {
+  return props.properties.map(item => {
     return {
       title: item.name,
-      url: `/admin/properties/${item.id}`
+      url: `/admin/properties/${item.id}`,
+      icon: Tent,
+      isActive: true,
+      items: [
+        {
+          title: "History",
+          url: "#",
+        },
+        {
+          title: "Starred",
+          url: "#",
+        },
+        {
+          title: "Settings",
+          url: "#",
+        },
+      ],
     }
   })
 })
@@ -80,28 +96,7 @@ const data = {
       icon: Settings
     },
   ],
-  navManagement: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: Tent,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-  ]
+  navManagement: mappedProperties.value
 }
 </script>
 
@@ -113,7 +108,7 @@ const data = {
           <SidebarMenuButton size="lg" as-child>
             <a href="#">
               <div
-                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <GalleryVerticalEnd class="size-4"/>
               </div>
               <div class="flex flex-col gap-0.5 leading-none">
@@ -142,23 +137,21 @@ const data = {
         <SidebarGroupLabel>Properties & Units</SidebarGroupLabel>
         <SidebarMenu>
           <Collapsible
-            v-for="item in data.navManagement"
-            :key="item.title"
-            as-child
-            :default-open="item.isActive"
-            class="group/collapsible"
+              v-for="item in data.navManagement"
+              :key="item.title"
+              as-child
+              :default-open="item.isActive"
+              class="group/collapsible"
           >
             <SidebarMenuItem>
               <CollapsibleTrigger as-child>
                 <SidebarMenuButton :tooltip="item.title">
-                  <component :is="item.icon" v-if="item.icon"/>
-                  <Label>{{ item.title }}</Label>
-                  <div class="ml-auto flex gap-2 items-center">
+                  <component :is="item.icon" v-if="item.icon" class="size-4 shrink-0" />
+                  <span class="flex-1 truncate min-w-0 text-sm font-medium">{{ item.title }}</span>
+                  <div class="flex gap-2 items-center shrink-0">
                     <span class="text-xs text-muted-foreground">2/3</span>
-                    <ChevronRight
-                      class="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                    <ChevronRight class="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </div>
-
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>

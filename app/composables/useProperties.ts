@@ -1,7 +1,9 @@
 import type {PaginationResponse, Property} from "~/types";
 
+
 export const usePublicProperties = () => {
   const { $api } = useNuxtApp()
+  const propertyStore = usePropertyStore()
 
   const result = useAsyncData('publicProperties', () =>
     $api<PaginationResponse<Property>>('/properties')
@@ -14,12 +16,16 @@ export const usePublicProperties = () => {
   return result
 }
 
-export const useAdminProperties = () => {
+export const useAdminProperties = (page: Ref<number> = ref(1)) => {
   const { $api } = useNuxtApp()
   const propertyStore = usePropertyStore()
 
-  const result = useAsyncData('adminProperties', () =>
-    $api<PaginationResponse<Property>>('/properties/my')
+  const result = useAsyncData(
+      () => `adminProperties-${page.value}`,
+      () => $api<PaginationResponse<Property>>('/properties/my', {
+        query: { page: page.value, limit: 10 }
+      }),
+      { watch: [page] }
   )
 
   watch(result.data, (data) => {

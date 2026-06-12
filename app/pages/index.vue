@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 const { data: properties, pending } = await usePublicProperties()
+console.log(properties.value)
 </script>
 
 <template>
@@ -17,14 +18,14 @@ const { data: properties, pending } = await usePublicProperties()
     </div>
 
     <div v-else-if="!pending && properties?.data.length" class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
-      <PropertyCard v-for="property in properties?.data" :key="property.id" :property="property" />
+      {{ properties?.data }}
     </div>
 
     <div v-else>
       <Empty>
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <Bell />
+            <LucideBell />
           </EmptyMedia>
           <EmptyTitle>No Notifications</EmptyTitle>
           <EmptyDescription>
@@ -33,7 +34,7 @@ const { data: properties, pending } = await usePublicProperties()
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" size="sm">
-            <RefreshCcw />
+            <LucideRefreshCcw />
             Refresh
           </Button>
         </EmptyContent>

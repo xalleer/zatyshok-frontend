@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const { data: property, pending } = await useAdminProperty(route.params.id as string)
+
 const tabClass = "bg-transparent rounded-none border-0 border-b-2 border-transparent px-0 pb-3 pt-0 font-medium text-muted-foreground shadow-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:border-b-emerald-900 data-[state=active]:text-emerald-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
 const slides = [
   {
@@ -24,8 +25,16 @@ const slides = [
 </script>
 
 <template>
-  <div>
-    <PropertySwiper :slides="slides" />
+  <template v-if="pending">
+    <Spinner />
+  </template>
+
+  <template v-else-if="!pending && !property">
+    <p>Сталась помилка</p>
+  </template>
+
+  <div v-else-if="property && !pending">
+    <PropertySwiper :property="property" :slides="slides" />
     <section class="grid grid-cols-5 gap-6 p-6">
       <div class="col-span-3 flex flex-col gap-6">
         <PropertyShortInfo />
