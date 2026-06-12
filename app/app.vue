@@ -12,18 +12,16 @@ import 'vue-sonner/style.css'
 </script>
 
 <style>
-.page-enter-active,
-.page-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+.page-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
-
+.page-leave-active {
+  transition: opacity 0.15s ease;
+}
 .page-enter-from {
   opacity: 0;
-  transform: scale(0.985);
+  transform: translateY(8px);
 }
-
 .page-leave-to {
   opacity: 0;
 }

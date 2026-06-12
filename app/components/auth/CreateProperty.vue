@@ -60,6 +60,7 @@ const onSubmit = form.handleSubmit((values) => {
       <Button
         type="button"
         class="w-full"
+        :class="{ 'cursor-wait': propertyStore.loading }"
         variant="ghost"
         @click="emit('changePhoneNumber')"
       >

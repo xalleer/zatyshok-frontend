@@ -14,7 +14,13 @@ console.log(properties.value)
     <h2 class="text-2xl font-semibold tracking-tight mb-6">Популярні зараз</h2>
 
     <div v-if="pending" class="flex justify-center items-center h-64">
-      <Spinner />
+      <div class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
+        <div v-for="n in 8" :key="n" class="flex flex-col gap-2">
+          <Skeleton class="h-48 rounded-xl" />
+          <Skeleton class="h-4 w-3/4 rounded" />
+          <Skeleton class="h-3 w-1/2 rounded" />
+        </div>
+      </div>
     </div>
 
     <div v-else-if="!pending && properties?.data.length" class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">

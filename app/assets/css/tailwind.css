@@ -114,6 +114,20 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.list-enter-active {
+  transition: opacity 0.3s ease var(--delay, 0ms), transform 0.3s ease var(--delay, 0ms);
+}
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.list-leave-active {
+  transition: opacity 0.2s ease;
+}
+.list-leave-to {
+  opacity: 0;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -15,6 +15,12 @@ export const usePropertyStore = defineStore('property', () => {
         method: 'POST',
         body,
       })
+
+      if (adminProperties.value) {
+        adminProperties.value.data.unshift(response)
+        adminProperties.value.meta.total++
+      }
+
       toast.success("Об'єкт створений")
       return response
     } catch (e) {

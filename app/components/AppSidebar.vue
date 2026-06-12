@@ -44,7 +44,7 @@ const mappedProperties = computed(() => {
       title: item.name,
       url: `/admin/properties/${item.id}`,
       icon: Tent,
-      isActive: true,
+      isActive: false,
       items: [
         {
           title: "History",
@@ -149,7 +149,7 @@ const data = {
                   <component :is="item.icon" v-if="item.icon" class="size-4 shrink-0" />
                   <span class="flex-1 truncate min-w-0 text-sm font-medium">{{ item.title }}</span>
                   <div class="flex gap-2 items-center shrink-0">
-                    <span class="text-xs text-muted-foreground">2/3</span>
+                    <span class="text-xs text-muted-foreground">2/{{ item.items.length }}</span>
                     <ChevronRight class="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </div>
                 </SidebarMenuButton>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Plus } from '@lucide/vue'
+import {Plus} from '@lucide/vue'
 
 const currentPage = ref(1)
-const { data, pending } = await useAdminProperties(currentPage)
+const {data, pending} = await useAdminProperties(currentPage)
 
 const onPageChange = (page: number) => {
   currentPage.value = page
@@ -11,33 +11,42 @@ const onPageChange = (page: number) => {
 const openPropertyDetails = (id: string) => {
   navigateTo(`/admin/properties/${id}`)
 }
+
+const openCreateProperty = () => {
+  navigateTo('/admin/properties/create')
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex justify-between items-center">
       <h3 class="text-2xl font-semibold">Мої об'єкти</h3>
-      <Button>
-        <Plus />
+      <Button @click="openCreateProperty">
+        <Plus/>
         Додати об'єкт
       </Button>
     </div>
 
     <template v-if="pending">
       <div class="grid grid-cols-3 gap-4">
-        <Skeleton v-for="n in 6" :key="n" class="h-64 rounded-xl" />
+        <Skeleton v-for="n in 6" :key="n" class="h-64 rounded-xl"/>
       </div>
     </template>
 
     <template v-else-if="data?.data.length">
-      <div>
+      <TransitionGroup
+          name="list"
+          tag="div"
+          class="flex flex-col"
+      >
         <AdminPropertyCard
             @open-property-details="openPropertyDetails($event)"
-            v-for="property in data.data"
+            v-for="(property, i) in data.data"
             :key="property.id"
             :property="property"
+            :style="{ '--delay': `${i * 60}ms` }"
         />
-      </div>
+      </TransitionGroup>
 
       <Pagination
           v-if="data.meta.totalPages > 1"
@@ -48,7 +57,7 @@ const openPropertyDetails = (id: string) => {
           @update:page="onPageChange"
       >
         <PaginationContent v-slot="{ items }">
-          <PaginationPrevious />
+          <PaginationPrevious/>
 
           <template v-for="(item, index) in items" :key="index">
             <PaginationItem
@@ -58,10 +67,10 @@ const openPropertyDetails = (id: string) => {
             >
               {{ item.value }}
             </PaginationItem>
-            <PaginationEllipsis v-else :index="index" />
+            <PaginationEllipsis v-else :index="index"/>
           </template>
 
-          <PaginationNext />
+          <PaginationNext/>
         </PaginationContent>
       </Pagination>
     </template>
@@ -76,7 +85,7 @@ const openPropertyDetails = (id: string) => {
         </EmptyHeader>
         <EmptyContent>
           <Button size="sm">
-            <Plus />
+            <Plus/>
             Додати об'єкт
           </Button>
         </EmptyContent>

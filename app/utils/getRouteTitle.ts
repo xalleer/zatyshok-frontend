@@ -14,5 +14,7 @@ export const getRouteTitle = (routeName: Routes) => {
       return 'Звіти'
     case Routes.ADMIN_SETTINGS:
       return 'Налаштування'
+    case Routes.ADMIN_PROPERTIES_CREATE:
+      return "Створити об'єкт"
   }
 }

@@ -70,7 +70,7 @@ onMounted(() => {
                 class="absolute inset-0 h-full w-full object-cover"
                 alt="Property Image"
             />
-            <div class="absolute inset-0 bg-black/45 backdrop-blur-[1px]" />
+            <div class="absolute inset-0 bg-black/45" />
           </template>
 
           <div

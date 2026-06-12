@@ -66,10 +66,10 @@ const slides = [
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" class="flex flex-col gap-6 mt-4">
+          <TabsContent value="overview" class="flex flex-col gap-6 mt-4 min-h-[400px]">
             <PropertyTabOverview />
           </TabsContent>
-          <TabsContent class="flex flex-col gap-6 mt-4" value="units">
+          <TabsContent class="flex flex-col gap-6 mt-4 min-h-[400px]" value="units">
             <PropertyTabUnits />
           </TabsContent>
           <TabsContent value="analytics">Analytics content</TabsContent>
