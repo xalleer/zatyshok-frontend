@@ -1,0 +1,1185 @@
+import { useState, useRef, useCallback } from "react";
+import {
+  ArrowLeft,
+  Check,
+  X,
+  MapPin,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Star,
+  Shuffle,
+  AlertCircle,
+  ChevronDown,
+  RefreshCw,
+  Crosshair,
+  Plus,
+} from "lucide-react";
+
+// ── Design tokens ─────────────────────────────────────────────
+const T = {
+  bg: "#f0e9db",
+  card: "#faf6ef",
+  border: "rgba(26,19,10,0.12)",
+  borderFocus: "#4a7c52",
+  primary: "#1c3c20",
+  primaryFg: "#f0e9db",
+  accent: "#c47b24",
+  muted: "#6b5d4a",
+  input: "#e8dece",
+  inputFocus: "#e0d5c0",
+  green1: "#2d5a34",
+  green2: "#4a7c52",
+  brown: "#6b4c2a",
+  destructive: "#c0392b",
+  serif: "'Playfair Display', serif",
+  sans: "'DM Sans', sans-serif",
+};
+
+// ── Transliteration: Ukrainian → slug ─────────────────────────
+const TRANSLIT: Record<string, string> = {
+  а:"a",б:"b",в:"v",г:"h",ґ:"g",д:"d",е:"e",є:"ie",ж:"zh",з:"z",
+  и:"y",і:"i",ї:"yi",й:"i",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",
+  р:"r",с:"s",т:"t",у:"u",ф:"f",х:"kh",ц:"ts",ч:"ch",ш:"sh",
+  щ:"shch",ь:"",ю:"iu",я:"ia",
+  А:"a",Б:"b",В:"v",Г:"h",Ґ:"g",Д:"d",Е:"e",Є:"ie",Ж:"zh",З:"z",
+  И:"y",І:"i",Ї:"yi",Й:"i",К:"k",Л:"l",М:"m",Н:"n",О:"o",П:"p",
+  Р:"r",С:"s",Т:"t",У:"u",Ф:"f",Х:"kh",Ц:"ts",Ч:"ch",Ш:"sh",
+  Щ:"shch",Ь:"",Ю:"iu",Я:"ia",
+};
+
+function toSlug(str: string) {
+  return str
+    .split("")
+    .map((c) => TRANSLIT[c] ?? c)
+    .join("")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// ── Policy options ────────────────────────────────────────────
+const POLICIES = [
+  {
+    id: "FLEXIBLE",
+    label: "Flexible",
+    description: "Full refund up to 24 hours before check-in.",
+    color: T.green2,
+    bg: "rgba(74,124,82,0.08)",
+    border: "rgba(74,124,82,0.3)",
+  },
+  {
+    id: "MODERATE",
+    label: "Moderate",
+    description: "Full refund up to 5 days before check-in.",
+    color: T.accent,
+    bg: "rgba(196,123,36,0.08)",
+    border: "rgba(196,123,36,0.3)",
+  },
+  {
+    id: "STRICT",
+    label: "Strict",
+    description: "50% refund up to 7 days before check-in.",
+    color: T.destructive,
+    bg: "rgba(192,57,43,0.08)",
+    border: "rgba(192,57,43,0.3)",
+  },
+] as const;
+
+type PolicyId = "FLEXIBLE" | "MODERATE" | "STRICT";
+
+// ── Uploaded image type ───────────────────────────────────────
+type UploadedImage = { id: string; url: string; name: string; cover: boolean };
+
+// ── Input component ───────────────────────────────────────────
+function Field({
+  label,
+  hint,
+  error,
+  children,
+  required,
+}: {
+  label: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <label
+        style={{
+          fontSize: 13,
+          fontFamily: T.sans,
+          fontWeight: 500,
+          color: T.primary,
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: T.accent, fontSize: 14 }}>*</span>}
+      </label>
+      {children}
+      {hint && !error && (
+        <span style={{ fontSize: 11, fontFamily: T.sans, color: T.muted }}>{hint}</span>
+      )}
+      {error && (
+        <span
+          style={{
+            fontSize: 11,
+            fontFamily: T.sans,
+            color: T.destructive,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <AlertCircle size={11} />
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
+const inputStyle = (focused = false): React.CSSProperties => ({
+  width: "100%",
+  background: focused ? T.inputFocus : T.input,
+  border: `1.5px solid ${focused ? T.borderFocus : T.border}`,
+  borderRadius: 8,
+  padding: "10px 13px",
+  fontSize: 14,
+  fontFamily: T.sans,
+  color: T.primary,
+  outline: "none",
+  boxSizing: "border-box",
+  transition: "border-color 0.15s, background 0.15s",
+});
+
+function TextInput({
+  value,
+  onChange,
+  placeholder,
+  prefix,
+  suffix,
+  mono,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  prefix?: string;
+  suffix?: string;
+  mono?: boolean;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        background: focused ? T.inputFocus : T.input,
+        border: `1.5px solid ${focused ? T.borderFocus : T.border}`,
+        borderRadius: 8,
+        overflow: "hidden",
+        transition: "border-color 0.15s, background 0.15s",
+      }}
+    >
+      {prefix && (
+        <span
+          style={{
+            padding: "0 10px",
+            fontSize: 13,
+            fontFamily: T.sans,
+            color: T.muted,
+            flexShrink: 0,
+            borderRight: `1px solid ${T.border}`,
+            alignSelf: "stretch",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {prefix}
+        </span>
+      )}
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          flex: 1,
+          background: "transparent",
+          border: "none",
+          padding: "10px 13px",
+          fontSize: 14,
+          fontFamily: mono ? "monospace" : T.sans,
+          color: T.primary,
+          outline: "none",
+        }}
+      />
+      {suffix && (
+        <span
+          style={{
+            padding: "0 10px",
+            fontSize: 12,
+            fontFamily: T.sans,
+            color: T.muted,
+            flexShrink: 0,
+          }}
+        >
+          {suffix}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── Map embed (OpenStreetMap iframe) ──────────────────────────
+function MapEmbed({
+  lat,
+  lon,
+  onCoordChange,
+}: {
+  lat: number;
+  lon: number;
+  onCoordChange: (lat: number, lon: number) => void;
+}) {
+  const zoom = 13;
+  const delta = 0.03;
+  const src =
+    `https://www.openstreetmap.org/export/embed.html` +
+    `?bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}` +
+    `&layer=mapnik&marker=${lat},${lon}`;
+
+  const [latStr, setLatStr] = useState(String(lat));
+  const [lonStr, setLonStr] = useState(String(lon));
+  const [key, setKey] = useState(0);
+
+  const apply = () => {
+    const newLat = parseFloat(latStr);
+    const newLon = parseFloat(lonStr);
+    if (!isNaN(newLat) && !isNaN(newLon)) {
+      onCoordChange(newLat, newLon);
+      setKey((k) => k + 1);
+    }
+  };
+
+  // Sync external changes
+  const latRef = useRef(lat);
+  const lonRef = useRef(lon);
+  if (latRef.current !== lat || lonRef.current !== lon) {
+    latRef.current = lat;
+    lonRef.current = lon;
+    setLatStr(String(lat));
+    setLonStr(String(lon));
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* Coordinate inputs row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 11, fontFamily: T.sans, color: T.muted, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Latitude
+          </div>
+          <input
+            value={latStr}
+            onChange={(e) => setLatStr(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && apply()}
+            style={{ ...inputStyle(), padding: "8px 10px", fontSize: 13, fontFamily: "monospace" }}
+          />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontFamily: T.sans, color: T.muted, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Longitude
+          </div>
+          <input
+            value={lonStr}
+            onChange={(e) => setLonStr(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && apply()}
+            style={{ ...inputStyle(), padding: "8px 10px", fontSize: 13, fontFamily: "monospace" }}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+          <button
+            onClick={apply}
+            title="Apply coordinates"
+            style={{
+              height: 36,
+              padding: "0 12px",
+              background: T.primary,
+              border: "none",
+              borderRadius: 8,
+              color: T.primaryFg,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              fontSize: 12,
+              fontFamily: T.sans,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Crosshair size={13} />
+            Update
+          </button>
+        </div>
+      </div>
+
+      {/* Map frame */}
+      <div
+        style={{
+          position: "relative",
+          borderRadius: 10,
+          overflow: "hidden",
+          border: `1px solid ${T.border}`,
+          height: 280,
+          background: "#dce9cc",
+        }}
+      >
+        <iframe
+          key={key}
+          src={src}
+          width="100%"
+          height="100%"
+          style={{ border: "none", display: "block" }}
+          title="Property location map"
+          loading="lazy"
+        />
+        {/* Refresh overlay button */}
+        <button
+          onClick={() => setKey((k) => k + 1)}
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            width: 30,
+            height: 30,
+            borderRadius: 6,
+            background: "rgba(250,246,239,0.9)",
+            border: `1px solid ${T.border}`,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: T.muted,
+          }}
+          title="Reload map"
+        >
+          <RefreshCw size={13} />
+        </button>
+        {/* Attribution note */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 6,
+            left: 8,
+            fontSize: 10,
+            fontFamily: T.sans,
+            color: "rgba(26,19,10,0.5)",
+            background: "rgba(250,246,239,0.75)",
+            padding: "2px 6px",
+            borderRadius: 4,
+          }}
+        >
+          © OpenStreetMap contributors
+        </div>
+      </div>
+
+      <p style={{ margin: 0, fontSize: 11, fontFamily: T.sans, color: T.muted }}>
+        Enter coordinates and click <strong>Update</strong> to move the pin. You can also find coordinates via Google Maps → right-click on a location.
+      </p>
+    </div>
+  );
+}
+
+// ── Image upload zone ─────────────────────────────────────────
+function ImageUploadZone({
+  images,
+  onAdd,
+  onRemove,
+  onSetCover,
+}: {
+  images: UploadedImage[];
+  onAdd: (imgs: UploadedImage[]) => void;
+  onRemove: (id: string) => void;
+  onSetCover: (id: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const readFiles = (files: FileList | null) => {
+    if (!files) return;
+    const newImgs: UploadedImage[] = [];
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        newImgs.push({
+          id: Math.random().toString(36).slice(2),
+          url: e.target?.result as string,
+          name: file.name,
+          cover: images.length === 0 && newImgs.length === 0,
+        });
+        if (newImgs.length === files.length) onAdd(newImgs);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      readFiles(e.dataTransfer.files);
+    },
+    [images]
+  );
+
+  const coverImg = images.find((i) => i.cover);
+  const extras = images.filter((i) => !i.cover);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Drop zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        onClick={() => inputRef.current?.click()}
+        style={{
+          border: `2px dashed ${dragging ? T.green2 : T.border}`,
+          borderRadius: 10,
+          padding: "28px 20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+          cursor: "pointer",
+          background: dragging ? "rgba(74,124,82,0.05)" : "rgba(26,19,10,0.02)",
+          transition: "all 0.15s",
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: "rgba(45,90,52,0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Upload size={18} style={{ color: T.green2 }} />
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontFamily: T.sans, fontWeight: 500, color: T.primary }}>
+            Drop photos here or click to browse
+          </div>
+          <div style={{ fontSize: 11, fontFamily: T.sans, color: T.muted, marginTop: 2 }}>
+            JPG, PNG, WebP · Max 10 MB each
+          </div>
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          style={{ display: "none" }}
+          onChange={(e) => readFiles(e.target.files)}
+        />
+      </div>
+
+      {/* Cover image */}
+      {coverImg && (
+        <div>
+          <div style={{ fontSize: 11, fontFamily: T.sans, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Cover photo
+          </div>
+          <div
+            style={{
+              position: "relative",
+              borderRadius: 10,
+              overflow: "hidden",
+              height: 180,
+              background: "#ccc",
+              border: `2px solid ${T.green2}`,
+            }}
+          >
+            <img
+              src={coverImg.url}
+              alt={coverImg.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: 8,
+                left: 8,
+                background: T.green2,
+                color: T.primaryFg,
+                fontSize: 10,
+                fontFamily: T.sans,
+                fontWeight: 600,
+                padding: "3px 8px",
+                borderRadius: 999,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              <Star size={9} fill="currentColor" />
+              Cover
+            </div>
+            <button
+              onClick={() => onRemove(coverImg.id)}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                background: "rgba(192,57,43,0.85)",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+              }}
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Additional images grid */}
+      {extras.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontFamily: T.sans, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Additional photos ({extras.length})
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+            {extras.map((img) => (
+              <div
+                key={img.id}
+                style={{
+                  position: "relative",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  height: 88,
+                  background: "#ccc",
+                  border: `1px solid ${T.border}`,
+                }}
+              >
+                <img
+                  src={img.url}
+                  alt={img.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+                {/* Hover overlay */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(0,0,0,0)",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "flex-end",
+                    padding: 5,
+                    gap: 4,
+                    opacity: 0,
+                    transition: "opacity 0.15s",
+                  }}
+                  className="img-hover-overlay"
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.background = "rgba(0,0,0,0.35)";
+                    el.style.opacity = "1";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLDivElement;
+                    el.style.background = "rgba(0,0,0,0)";
+                    el.style.opacity = "0";
+                  }}
+                >
+                  <button
+                    onClick={() => onSetCover(img.id)}
+                    title="Set as cover"
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 5,
+                      background: "rgba(255,255,255,0.85)",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: T.accent,
+                    }}
+                  >
+                    <Star size={11} />
+                  </button>
+                  <button
+                    onClick={() => onRemove(img.id)}
+                    title="Remove"
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 5,
+                      background: "rgba(192,57,43,0.85)",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#fff",
+                    }}
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {/* Add more tile */}
+            <div
+              onClick={() => inputRef.current?.click()}
+              style={{
+                height: 88,
+                border: `1.5px dashed ${T.border}`,
+                borderRadius: 8,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+                cursor: "pointer",
+                color: T.muted,
+              }}
+            >
+              <Plus size={16} />
+              <span style={{ fontSize: 10, fontFamily: T.sans }}>Add more</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Section wrapper ───────────────────────────────────────────
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        background: T.card,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12,
+        padding: "22px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 18,
+      }}
+    >
+      <div>
+        <h3
+          style={{
+            fontFamily: T.serif,
+            fontWeight: 600,
+            fontSize: "1rem",
+            color: T.primary,
+            margin: 0,
+          }}
+        >
+          {title}
+        </h3>
+        {subtitle && (
+          <p style={{ margin: "3px 0 0", fontSize: 12, fontFamily: T.sans, color: T.muted }}>
+            {subtitle}
+          </p>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────
+export function CreatePropertyPage({ onBack }: { onBack: () => void }) {
+  // Basic info
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugEdited, setSlugEdited] = useState(false);
+  const [description, setDescription] = useState("");
+
+  // Location
+  const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
+  const [lat, setLat] = useState(49.5883);
+  const [lon, setLon] = useState(34.5514);
+
+  // Policy
+  const [policy, setPolicy] = useState<PolicyId>("FLEXIBLE");
+
+  // Images
+  const [images, setImages] = useState<UploadedImage[]>([]);
+
+  // Validation
+  const [submitted, setSubmitted] = useState(false);
+
+  const errors = {
+    name: submitted && !name.trim() ? "Name is required" : undefined,
+    slug: submitted && !slug.trim() ? "Slug is required" : undefined,
+    city: submitted && !city.trim() ? "City is required" : undefined,
+    address: submitted && !address.trim() ? "Address is required" : undefined,
+  };
+
+  const handleNameChange = (v: string) => {
+    setName(v);
+    if (!slugEdited) setSlug(toSlug(v));
+  };
+
+  const handleSlugChange = (v: string) => {
+    setSlug(toSlug(v));
+    setSlugEdited(true);
+  };
+
+  const handleAddImages = (newImgs: UploadedImage[]) => {
+    setImages((prev) => {
+      const hasCover = prev.some((i) => i.cover);
+      return [
+        ...prev,
+        ...newImgs.map((img, idx) => ({
+          ...img,
+          cover: !hasCover && idx === 0,
+        })),
+      ];
+    });
+  };
+
+  const handleRemoveImage = (id: string) => {
+    setImages((prev) => {
+      const next = prev.filter((i) => i.id !== id);
+      if (next.length > 0 && !next.some((i) => i.cover)) {
+        next[0].cover = true;
+      }
+      return next;
+    });
+  };
+
+  const handleSetCover = (id: string) => {
+    setImages((prev) => prev.map((i) => ({ ...i, cover: i.id === id })));
+  };
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+    if (!name.trim() || !slug.trim() || !city.trim() || !address.trim()) return;
+    const payload = { name, slug, description, city, address, latitude: lat, longitude: lon, policy };
+    alert("Payload:\n" + JSON.stringify(payload, null, 2));
+  };
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        overflow: "hidden",
+        fontFamily: T.sans,
+        background: T.bg,
+      }}
+    >
+      {/* ── Header ── */}
+      <header
+        style={{
+          background: T.card,
+          borderBottom: `1px solid ${T.border}`,
+          padding: "0 28px",
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <button
+            onClick={onBack}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "none",
+              border: `1px solid ${T.border}`,
+              borderRadius: 7,
+              padding: "6px 12px",
+              color: T.muted,
+              fontSize: 13,
+              fontFamily: T.sans,
+              cursor: "pointer",
+            }}
+          >
+            <ArrowLeft size={13} />
+            Properties
+          </button>
+          <div style={{ width: 1, height: 20, background: T.border }} />
+          <div>
+            <div
+              style={{
+                fontFamily: T.serif,
+                fontWeight: 600,
+                fontSize: "1.1rem",
+                color: T.primary,
+                lineHeight: 1.2,
+              }}
+            >
+              New property
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, fontFamily: T.sans }}>
+              Fill in the details below to publish your listing
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={onBack}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "8px 14px",
+              background: "none",
+              border: `1px solid ${T.border}`,
+              borderRadius: 7,
+              fontSize: 13,
+              fontFamily: T.sans,
+              color: T.muted,
+              cursor: "pointer",
+            }}
+          >
+            <X size={13} />
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 18px",
+              background: T.primary,
+              border: "none",
+              borderRadius: 7,
+              fontSize: 13,
+              fontFamily: T.sans,
+              color: T.primaryFg,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            <Check size={13} />
+            Publish property
+          </button>
+        </div>
+      </header>
+
+      {/* ── Scrollable body ── */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+            padding: "28px 28px 60px",
+            display: "grid",
+            gridTemplateColumns: "1fr 380px",
+            gap: 24,
+            alignItems: "start",
+          }}
+        >
+          {/* ── LEFT: Form sections ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+            {/* Basic information */}
+            <Section title="Basic information" subtitle="The name and description guests will see on your listing.">
+              <Field label="Property name" required error={errors.name}>
+                <TextInput
+                  value={name}
+                  onChange={handleNameChange}
+                  placeholder="e.g. Глемпінг «Лісова Пісня»"
+                />
+              </Field>
+
+              <Field
+                label="URL slug"
+                required
+                error={errors.slug}
+                hint="Used in your public URL: wildroots.com/your-slug"
+              >
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <TextInput
+                      value={slug}
+                      onChange={handleSlugChange}
+                      placeholder="lisova-pisnya"
+                      prefix="wildroots.com/"
+                      mono
+                    />
+                  </div>
+                  <button
+                    onClick={() => { setSlug(toSlug(name)); setSlugEdited(false); }}
+                    title="Re-generate from name"
+                    style={{
+                      width: 38,
+                      height: 38,
+                      border: `1px solid ${T.border}`,
+                      borderRadius: 8,
+                      background: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: T.muted,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Shuffle size={14} />
+                  </button>
+                </div>
+              </Field>
+
+              <Field label="Description" hint="Describe the atmosphere, surroundings, and what makes this place special.">
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Затишні куполи в сосновому лісі, оточені тишею природи…"
+                  rows={5}
+                  style={{
+                    ...inputStyle(),
+                    resize: "vertical",
+                    lineHeight: 1.65,
+                    minHeight: 110,
+                  }}
+                />
+              </Field>
+            </Section>
+
+            {/* Location */}
+            <Section title="Location" subtitle="Where guests will find you. Coordinates pinpoint your pin on the map.">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <Field label="City" required error={errors.city}>
+                  <TextInput value={city} onChange={setCity} placeholder="Полтава" />
+                </Field>
+                <Field label="Address" required error={errors.address}>
+                  <TextInput value={address} onChange={setAddress} placeholder="вул. Соснова, 1" />
+                </Field>
+              </div>
+
+              <Field label="Map & coordinates">
+                <MapEmbed
+                  lat={lat}
+                  lon={lon}
+                  onCoordChange={(newLat, newLon) => {
+                    setLat(newLat);
+                    setLon(newLon);
+                  }}
+                />
+              </Field>
+            </Section>
+
+            {/* Cancellation policy */}
+            <Section title="Cancellation policy" subtitle="Choose how guests can cancel their bookings.">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+                {POLICIES.map((p) => {
+                  const active = policy === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setPolicy(p.id)}
+                      style={{
+                        background: active ? p.bg : "rgba(26,19,10,0.02)",
+                        border: `2px solid ${active ? p.border : T.border}`,
+                        borderRadius: 10,
+                        padding: "14px 14px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        transition: "all 0.15s",
+                        position: "relative",
+                      }}
+                    >
+                      {active && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            width: 18,
+                            height: 18,
+                            borderRadius: "50%",
+                            background: p.color,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Check size={10} color="#fff" />
+                        </div>
+                      )}
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontFamily: T.sans,
+                          fontWeight: 600,
+                          color: active ? p.color : T.primary,
+                          marginBottom: 5,
+                        }}
+                      >
+                        {p.label}
+                      </div>
+                      <div style={{ fontSize: 12, fontFamily: T.sans, color: T.muted, lineHeight: 1.5 }}>
+                        {p.description}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Section>
+          </div>
+
+          {/* ── RIGHT: Images ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <Section title="Photos" subtitle="Add a cover photo and additional images. The first image becomes the cover.">
+              <ImageUploadZone
+                images={images}
+                onAdd={handleAddImages}
+                onRemove={handleRemoveImage}
+                onSetCover={handleSetCover}
+              />
+              {images.length === 0 && (
+                <div
+                  style={{
+                    background: "rgba(26,19,10,0.03)",
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 8,
+                    padding: "12px 14px",
+                    fontSize: 12,
+                    fontFamily: T.sans,
+                    color: T.muted,
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 8,
+                  }}
+                >
+                  <ImageIcon size={14} style={{ flexShrink: 0, marginTop: 1, color: T.muted }} />
+                  <span>
+                    Properties with at least 5 photos receive <strong>40% more</strong> booking inquiries. Add your best shots.
+                  </span>
+                </div>
+              )}
+            </Section>
+
+            {/* Summary preview card */}
+            <div
+              style={{
+                background: T.card,
+                border: `1px solid ${T.border}`,
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              {/* Mini preview hero */}
+              <div
+                style={{
+                  height: 120,
+                  background: images.find(i => i.cover)
+                    ? `url(${images.find(i => i.cover)!.url}) center/cover`
+                    : "linear-gradient(135deg, rgba(45,90,52,0.15), rgba(196,123,36,0.1))",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  padding: "10px 14px",
+                }}
+              >
+                {!images.find(i => i.cover) && (
+                  <div style={{ color: "rgba(26,19,10,0.3)", fontSize: 12, fontFamily: T.sans }}>
+                    Cover photo preview
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: "14px 16px" }}>
+                <div
+                  style={{
+                    fontFamily: T.serif,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    color: name ? T.primary : T.muted,
+                    marginBottom: 4,
+                  }}
+                >
+                  {name || "Property name…"}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: 12,
+                    fontFamily: T.sans,
+                    color: T.muted,
+                  }}
+                >
+                  <MapPin size={11} />
+                  {city || "City"}{address ? `, ${address}` : ""}
+                </div>
+                <div
+                  style={{
+                    marginTop: 10,
+                    paddingTop: 10,
+                    borderTop: `1px solid ${T.border}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontFamily: T.sans,
+                      color: T.muted,
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Listing preview
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontFamily: T.sans,
+                      fontWeight: 600,
+                      color: POLICIES.find(p => p.id === policy)?.color,
+                      background: POLICIES.find(p => p.id === policy)?.bg,
+                      border: `1px solid ${POLICIES.find(p => p.id === policy)?.border}`,
+                      borderRadius: 999,
+                      padding: "2px 9px",
+                    }}
+                  >
+                    {policy.charAt(0) + policy.slice(1).toLowerCase()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
