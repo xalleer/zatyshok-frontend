@@ -27,7 +27,7 @@ const emit = defineEmits<{
       </div>
 
       <div class="flex gap-2 items-center">
-        <Button @click="emit('openPropertyDetails', property.id)" variant="outline">View Details</Button>
+        <Button class="cursor-pointer" @click="emit('openPropertyDetails', property.id)" variant="outline">Деталі</Button>
         <Button size="icon">
           <LucideEllipsis />
         </Button>

@@ -20,7 +20,7 @@ export const useAdminProperties = (page: Ref<number> = ref(1)) => {
   const { $api } = useNuxtApp()
   const propertyStore = usePropertyStore()
 
-  const result = useAsyncData(
+  const result = useLazyAsyncData(
       () => `adminProperties-${page.value}`,
       () => $api<PaginationResponse<Property>>('/properties/my', {
         query: { page: page.value, limit: 10 }
